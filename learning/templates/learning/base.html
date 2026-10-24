@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="{% static 'images/logo.ico' %}">
+  <title>{% block title %}Kotoba{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'learning/style.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <div class="nav-bar">
+      <div class="nav-brand">
+          <a href="{% url 'index' %}">
+              <span class="brand-mark" aria-hidden="true">あ</span>
+              <span>Kotoba</span>
+          </a>
+      </div>
+
+      {% if request.user.is_authenticated %}
+      <div class="nav-links">
+          {% with stage=request.user.highest_unlocked_stage %}
+            <!-- Hiragana (Always unlocked) -->
+            <a href="{% url 'hiragana_lessons' %}" class="{% block active_h %}{% endblock %}">
+              Hiragana
+            </a>
+
+            <!-- Katakana (Locked if only on Hiragana) -->
+            {% if stage == 'HIRAGANA' %}
+              <span class="nav-link locked" aria-disabled="true">Katakana <span class="lock-icon">🔒</span></span>
+            {% else %}
+              <a href="{% url 'katakana_lessons' %}" class="{% block active_k %}{% endblock %}">Katakana</a>
+            {% endif %}
+
+            <!-- Kanji (Locked if on Hiragana or Katakana) -->
+            {% if stage == 'HIRAGANA' or stage == 'KATAKANA' %}
+              <span class="nav-link locked" aria-disabled="true">Kanji (1-30) <span class="lock-icon">🔒</span></span>
+            {% else %}
+              <a href="{% url 'kanji_intro_lessons' %}" class="{% block active_kanji %}{% endblock %}">Kanji (1-30)</a>
+            {% endif %}
+
+            <!-- Grammar (Locked unless on Grammar) -->
+            {% if stage != 'GRAMMAR' %}
+              <span class="nav-link locked" aria-disabled="true">Grammar <span class="lock-icon">🔒</span></span>
+            {% else %}
+              <a href="{% url 'grammar_lessons' %}" class="{% block active_g %}{% endblock %}">Grammar</a>
+            {% endif %}
+          {% endwith %}
+      </div>
+
+      <div class="nav-auth">
+        <span class="user-welcome">{{request.user.streak}}</span>
+          <span class="user-welcome">👋 {{ request.user.username }}</span>
+          <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+              {% csrf_token %}
+              <button type="submit" class="logout-link" style="background: none; border: none; cursor: pointer; font: inherit;">
+                  Sign out
+              </button>
+          </form>
+      </div>
+      {% else %}
+      <div class="nav-auth">
+          <a href="{% url 'login' %}">Log in</a>
+          <a href="{% url 'register' %}">Register</a>
+      </div>
+      {% endif %}
+  </div>
+
+  <main style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+      {% block content %}
+      {% endblock %}
+  </main>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

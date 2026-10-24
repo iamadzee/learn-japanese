@@ -1,0 +1,124 @@
+/* Navigation bar layout matching login.html colors */
+.nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.85rem 2rem;
+    background-color: #f7f5f2; /* Exact background color from login.html */
+    color: #20253b;            /* Exact primary font color from login.html */
+    border-bottom: 1px solid #dedee6; /* Clean card border style */
+    box-shadow: 0 2px 10px rgb(32 37 59 / 4%);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Structural item layout containers */
+.nav-brand, .nav-links, .nav-auth {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* App logo styling */
+.nav-brand a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    color: #20253b;
+    text-decoration: none;
+    letter-spacing: .02em;
+    font-size: 16px;
+}
+
+/* Rounded character badge wrapper */
+.nav-brand .brand-mark {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border: 1px solid #d9c7d5;
+    border-radius: 10px;
+    background: #67405f; /* Deep plum purple background */
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* Main menu navigation links */
+.nav-links a {
+    color: #20253b;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: color .18s, background-color .18s;
+}
+
+/* Interactive link hover states */
+.nav-links a:hover,
+.nav-links a:focus-visible {
+    color: #77466d;
+    background-color: rgb(134 82 124 / 8%);
+}
+
+/* Active current-location styling block modifier */
+.nav-links a.active-tab {
+    background: #67405f;
+    color: white;
+}
+
+/* Gated locked stages matching your progression system variables */
+.nav-links a.locked {
+    color: #a1a2ae;
+    cursor: not-allowed;
+    pointer-events: none; /* Stops mouse clicks */
+    background: transparent;
+}
+
+.lock-icon {
+    font-size: 12px;
+    margin-left: 4px;
+    opacity: 0.7;
+}
+
+/* User account actions dock */
+.nav-auth {
+    gap: 1rem;
+}
+
+.nav-auth .user-welcome {
+    font-size: 13px;
+    font-weight: 600;
+    color: #73768a;
+}
+
+.nav-auth .logout-link {
+    color: #b95f68; /* Rose red tint from welcome gradient */
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background-color .18s;
+}
+
+.nav-auth .logout-link:hover {
+    background-color: rgb(185 95 104 / 8%);
+}
+
+/* Mobile responsive collapsing layout grid */
+@media (max-width: 768px) {
+    .nav-bar {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+        text-align: center;
+    }
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+}

@@ -1,0 +1,333 @@
+{% extends 'learning/base.html' %}
+
+{% block title %}Kanji (1-30) | Kotoba{% endblock %}
+{% block active_kanji %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .lesson-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #ecdfe8;
+    padding-bottom: 1rem;
+  }
+  .lesson-header h1 {
+    color: #4a2845;
+    margin-bottom: 0.25rem;
+  }
+  .lesson-header p {
+    color: #666;
+    margin: 0;
+  }
+  .kanji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+  .kanji-card {
+    background: #ffffff;
+    border: 1px solid #e2d2de;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(103, 64, 95, 0.05);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .kanji-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(103, 64, 95, 0.12);
+  }
+  .kanji-card.is-selected {
+    border-color: #67405f;
+    box-shadow: 0 0 0 3px rgba(103, 64, 95, 0.18);
+  }
+  .kanji-card:focus-visible {
+    outline: 3px solid #86527c;
+    outline-offset: 3px;
+  }
+  .kanji-char {
+    font-size: 2.75rem;
+    font-weight: 700;
+    color: #67405f;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  .kanji-meaning {
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 0.35rem;
+  }
+  .kanji-readings {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.4;
+  }
+  .completion-box {
+    background: #fbf7fa;
+    border: 1px solid #d8bfd4;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .btn-complete {
+    background-color: #67405f;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .btn-complete:hover {
+    background-color: #86527c;
+  }
+  .btn-complete:disabled {
+    background-color: #aa97a5;
+    cursor: not-allowed;
+  }
+  .quiz-panel {
+    background: #fbf7fa;
+    border: 1px solid #d8bfd4;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  .quiz-prompt { color: #4a2845; margin: 0 0 1rem; }
+  .quiz-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+  }
+  .quiz-option {
+    background: #fff;
+    border: 1px solid #d8bfd4;
+    border-radius: 6px;
+    padding: 0.8rem;
+    color: #222;
+    font: inherit;
+    cursor: pointer;
+  }
+  .quiz-option:hover, .quiz-option:focus-visible { border-color: #67405f; outline: 2px solid #86527c; }
+  .quiz-option.correct { background: #e8f4e8; border-color: #43834a; }
+  .quiz-option.incorrect { background: #fae9e9; border-color: #b34343; }
+  #quizFeedback { min-height: 1.5em; font-weight: 600; color: #4a2845; }
+  .quiz-next { margin-top: 0.5rem; }
+  [translate="no"] { -webkit-user-select: none; }
+  @media (max-width: 600px) {
+    .completion-box { align-items: stretch; flex-direction: column; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <main class="notranslate" translate="no" lang="ja" class="google-notranslate">
+  <header class="lesson-header">
+    <h1>First 30 Kanji (漢字)</h1>
+    <p>Master the fundamental building blocks: numbers, nature, and essential concepts.</p>
+  </header>
+
+  <section class="quiz-panel" aria-labelledby="quizPrompt">
+    <h2 class="quiz-prompt" id="quizPrompt">Choose the kanji that matches the meaning</h2>
+    <div id="quizOptions" class="quiz-options"></div>
+    <p id="quizFeedback" role="status" aria-live="polite"></p>
+    <button id="nextQuestion" class="btn-complete quiz-next" type="button">Next question</button>
+    <p id="quizScore" aria-live="polite">Question 1 of 30</p>
+  </section>
+
+  <div class="kanji-grid" id="kanjiGrid" aria-label="Kanji reference cards">
+    <!-- Numbers 1 to 10 -->
+    <div class="kanji-card"><div class="kanji-char">一</div><div class="kanji-meaning">One</div><div class="kanji-readings">ひと・つ<br>イチ</div></div>
+    <div class="kanji-card"><div class="kanji-char">二</div><div class="kanji-meaning">Two</div><div class="kanji-readings">ふた・つ<br>ニ</div></div>
+    <div class="kanji-card"><div class="kanji-char">三</div><div class="kanji-meaning">Three</div><div class="kanji-readings">みっ・つ<br>サン</div></div>
+    <div class="kanji-card"><div class="kanji-char">四</div><div class="kanji-meaning">Four</div><div class="kanji-readings">よん / よ<br>シ</div></div>
+    <div class="kanji-card"><div class="kanji-char">五</div><div class="kanji-meaning">Five</div><div class="kanji-readings">いつ・つ<br>ゴ</div></div>
+    <div class="kanji-card"><div class="kanji-char">六</div><div class="kanji-meaning">Six</div><div class="kanji-readings">むっ・つ<br>ロク</div></div>
+    <div class="kanji-card"><div class="kanji-char">七</div><div class="kanji-meaning">Seven</div><div class="kanji-readings">なな・つ<br>シチ</div></div>
+    <div class="kanji-card"><div class="kanji-char">八</div><div class="kanji-meaning">Eight</div><div class="kanji-readings">やっ・つ<br>ハチ</div></div>
+    <div class="kanji-card"><div class="kanji-char">九</div><div class="kanji-meaning">Nine</div><div class="kanji-readings">ここの・つ<br>キュウ / ク</div></div>
+    <div class="kanji-card"><div class="kanji-char">十</div><div class="kanji-meaning">Ten</div><div class="kanji-readings">とお<br>ジュウ</div></div>
+
+    <!-- Nature & Elements -->
+    <div class="kanji-card"><div class="kanji-char">日</div><div class="kanji-meaning">Sun / Day</div><div class="kanji-readings">ひ / か<br>ニチ / ジツ</div></div>
+    <div class="kanji-card"><div class="kanji-char">月</div><div class="kanji-meaning">Moon / Month</div><div class="kanji-readings">つき<br>ゲツ / ガツ</div></div>
+    <div class="kanji-card"><div class="kanji-char">火</div><div class="kanji-meaning">Fire</div><div class="kanji-readings">ひ<br>カ</div></div>
+    <div class="kanji-card"><div class="kanji-char">水</div><div class="kanji-meaning">Water</div><div class="kanji-readings">みず<br>スイ</div></div>
+    <div class="kanji-card"><div class="kanji-char">木</div><div class="kanji-meaning">Tree / Wood</div><div class="kanji-readings">き<br>モク / ボク</div></div>
+    <div class="kanji-card"><div class="kanji-char">金</div><div class="kanji-meaning">Gold / Money</div><div class="kanji-readings">かね<br>キン</div></div>
+    <div class="kanji-card"><div class="kanji-char">土</div><div class="kanji-meaning">Earth / Soil</div><div class="kanji-readings">つち<br>ド / ト</div></div>
+    <div class="kanji-card"><div class="kanji-char">山</div><div class="kanji-meaning">Mountain</div><div class="kanji-readings">やま<br>サン</div></div>
+    <div class="kanji-card"><div class="kanji-char">川</div><div class="kanji-meaning">River</div><div class="kanji-readings">かわ<br>セン</div></div>
+    <div class="kanji-card"><div class="kanji-char">田</div><div class="kanji-meaning">Rice Field</div><div class="kanji-readings">た<br>デン</div></div>
+
+    <!-- People, Time & Space -->
+    <div class="kanji-card"><div class="kanji-char">人</div><div class="kanji-meaning">Person</div><div class="kanji-readings">ひと<br>ジン / ニン</div></div>
+    <div class="kanji-card"><div class="kanji-char">子</div><div class="kanji-meaning">Child</div><div class="kanji-readings">こ<br>シ</div></div>
+    <div class="kanji-card"><div class="kanji-char">女</div><div class="kanji-meaning">Woman</div><div class="kanji-readings">おんな<br>ジョ</div></div>
+    <div class="kanji-card"><div class="kanji-char">男</div><div class="kanji-meaning">Man</div><div class="kanji-readings">おとこ<br>ダン / ナン</div></div>
+    <div class="kanji-card"><div class="kanji-char">大</div><div class="kanji-meaning">Big / Large</div><div class="kanji-readings">おお・きい<br>ダイ / タイ</div></div>
+    <div class="kanji-card"><div class="kanji-char">小</div><div class="kanji-meaning">Small</div><div class="kanji-readings">ちい・さい<br>ショウ</div></div>
+    <div class="kanji-card"><div class="kanji-char">中</div><div class="kanji-meaning">Inside / Middle</div><div class="kanji-readings">なか<br>チュウ</div></div>
+    <div class="kanji-card"><div class="kanji-char">上</div><div class="kanji-meaning">Above / Up</div><div class="kanji-readings">うえ<br>ジョウ</div></div>
+    <div class="kanji-card"><div class="kanji-char">下</div><div class="kanji-meaning">Below / Down</div><div class="kanji-readings">した<br>カ / ゲ</div></div>
+    <div class="kanji-card"><div class="kanji-char">年</div><div class="kanji-meaning">Year</div><div class="kanji-readings">とし<br>ネン</div></div>
+  </div>
+
+  <div class="completion-box">
+    <div>
+      <h3 style="margin: 0 0 0.25rem 0; color: #4a2845;">Finished reviewing these kanji?</h3>
+      <p style="margin: 0; color: #666; font-size: 0.95rem;">Unlock the Core Grammar phase to begin forming complete sentences.</p>
+    </div>
+    <button id="completeBtn" class="btn-complete" onclick="markComplete()">Complete & Unlock Grammar</button>
+  </div>
+  </main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Keep Japanese text from being automatically translated by Google Translate.
+  document.documentElement.setAttribute('translate', 'no');
+  document.documentElement.classList.add('notranslate');
+
+  const kanjiGrid = document.getElementById('kanjiGrid');
+  const cards = Array.from(kanjiGrid.querySelectorAll('.kanji-card'));
+  cards.forEach(card => {
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-pressed', 'false');
+    card.setAttribute('aria-label', `${card.querySelector('.kanji-char').textContent}: ${card.querySelector('.kanji-meaning').textContent}. Click to hear the kanji`);
+  });
+
+  // Ask meaning-to-kanji questions in a shuffled order with randomized distractors.
+  const quizOptions = document.getElementById('quizOptions');
+  const quizFeedback = document.getElementById('quizFeedback');
+  const quizScore = document.getElementById('quizScore');
+  const nextQuestion = document.getElementById('nextQuestion');
+  let shuffledCards = cards.slice().sort(() => Math.random() - 0.5);
+  let questionIndex = 0;
+  let answered = false;
+
+  function showQuestion() {
+    answered = false;
+    const answer = shuffledCards[questionIndex];
+    document.getElementById('quizPrompt').textContent = `Which kanji means “${answer.querySelector('.kanji-meaning').textContent}”?`;
+    quizFeedback.textContent = '';
+    quizScore.textContent = `Question ${questionIndex + 1}`;
+    const choices = [answer, ...cards.filter(card => card !== answer).sort(() => Math.random() - 0.5).slice(0, 3)]
+      .sort(() => Math.random() - 0.5);
+    quizOptions.replaceChildren(...choices.map(card => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'quiz-option';
+      button.textContent = card.querySelector('.kanji-char').textContent;
+      button.setAttribute('aria-label', card.querySelector('.kanji-char').textContent);
+      button.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        const correct = card === answer;
+        button.classList.add(correct ? 'correct' : 'incorrect');
+        quizFeedback.textContent = correct ? 'Correct!' : `Not quite. The answer is ${answer.querySelector('.kanji-char').textContent}.`;
+        if ('speechSynthesis' in window && correct) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(answer.querySelector('.kanji-char').textContent);
+          utterance.lang = 'ja-JP';
+          window.speechSynthesis.speak(utterance);
+        }
+      });
+      return button;
+    }));
+  }
+  nextQuestion.addEventListener('click', () => {
+    if (questionIndex >= shuffledCards.length) {
+      shuffledCards = cards.slice().sort(() => Math.random() - 0.5);
+      questionIndex = 0;
+      nextQuestion.textContent = 'Next question';
+    } else if (answered) {
+      questionIndex++;
+    } else {
+      return;
+    }
+    showQuestion();
+  });
+  showQuestion();
+
+  function interactWithKanjiCard(card) {
+    kanjiGrid.querySelectorAll('.kanji-card').forEach(item => {
+      const selected = item === card && !item.classList.contains('is-selected');
+      item.classList.toggle('is-selected', selected);
+      item.setAttribute('aria-pressed', String(selected));
+    });
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(card.querySelector('.kanji-char').textContent);
+      utterance.lang = 'ja-JP';
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+
+  kanjiGrid.addEventListener('click', event => {
+    const card = event.target.closest('.kanji-card');
+    if (card) interactWithKanjiCard(card);
+  });
+  kanjiGrid.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const card = event.target.closest('.kanji-card');
+    if (card) {
+      event.preventDefault();
+      interactWithKanjiCard(card);
+    }
+  });
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function markComplete() {
+    const btn = document.getElementById('completeBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    fetch("{% url 'update_stage' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie('csrftoken')
+      },
+      body: JSON.stringify({ new_stage: "GRAMMAR" })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'ok') {
+        window.location.href = "{% url 'grammar_lessons' %}";
+      } else {
+        alert('Could not update progress: ' + (data.error || 'Unknown error'));
+        btn.disabled = false;
+        btn.textContent = 'Complete & Unlock Grammar';
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('An error occurred while saving your progress.');
+      btn.disabled = false;
+      btn.textContent = 'Complete & Unlock Grammar';
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'learning/base.html' %}
+
+{% block title %}Dashboard | Kotoba{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stage-link {
+    color: #67405f;
+    text-decoration: none;
+    font-weight: 700;
+    border-bottom: 2px solid #86527c;
+    padding-bottom: 2px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .stage-link:hover {
+    color: #86527c;
+    border-bottom-color: #67405f;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <h2>Welcome to your dashboard!</h2>
+  <p>Your current stage is:
+    <strong>
+      {% with stage=request.user.highest_unlocked_stage label=request.user.get_highest_unlocked_stage_display %}
+        {% if stage == 'HIRAGANA' %}
+          <a href="{% url 'hiragana_lessons' %}" class="stage-link">{{ label }}</a>
+        {% elif stage == 'KATAKANA' %}
+          <a href="{% url 'katakana_lessons' %}" class="stage-link">{{ label }}</a>
+        {% elif stage == 'KANJI' %}
+          <a href="{% url 'kanji_intro_lessons' %}" class="stage-link">{{ label }}</a>
+        {% elif stage == 'GRAMMAR' %}
+          <a href="{% url 'grammar_lessons' %}" class="stage-link">{{ label }}</a>
+        {% else %}
+          {{ label }}
+        {% endif %}
+      {% endwith %}
+    </strong>
+  </p>
+{% endblock %}

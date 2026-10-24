@@ -1,0 +1,195 @@
+{% extends 'learning/base.html' %}
+
+{% block title %}Core Grammar | Kotoba{% endblock %}
+{% block active_g %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .grammar-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #ecdfe8;
+    padding-bottom: 1rem;
+  }
+  .grammar-header h1 {
+    color: #4a2845;
+    margin-bottom: 0.25rem;
+  }
+  .grammar-header p {
+    color: #666;
+    margin: 0;
+  }
+  .grammar-section {
+    background: #ffffff;
+    border: 1px solid #e2d2de;
+    border-radius: 8px;
+    padding: 1.75rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(103, 64, 95, 0.04);
+  }
+  .grammar-section h2 {
+    color: #67405f;
+    margin-top: 0;
+    font-size: 1.4rem;
+    border-bottom: 1px solid #f2e8f0;
+    padding-bottom: 0.5rem;
+  }
+  .formula-box {
+    background: #fbf7fa;
+    border-left: 4px solid #86527c;
+    padding: 1rem;
+    font-family: monospace;
+    font-size: 1.05rem;
+    color: #4a2845;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .example-group {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .example-item {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+  }
+  .jp-sentence {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #222;
+  }
+  .romaji {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 0.2rem;
+  }
+  .en-translation {
+    font-size: 0.95rem;
+    color: #444;
+  }
+  .particle-pill {
+    display: inline-block;
+    background-color: #67405f;
+    color: #ffffff;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin-right: 0.35rem;
+  }
+  .grammar-section details {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    background: #fbf7fa;
+    border: 1px solid #e2d2de;
+    border-radius: 6px;
+  }
+  .grammar-section summary {
+    color: #67405f;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .grammar-section details p { margin-bottom: 0; }
+  .jp-sentence ruby { ruby-position: over; }
+  .jp-sentence rt { color: #67405f; font-size: 0.65em; font-weight: 400; }
+  @media (max-width: 600px) {
+    .grammar-section { padding: 1.1rem; }
+    .jp-sentence { font-size: 1.05rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <header class="grammar-header">
+    <h1>Core Japanese Grammar</h1>
+    <p>Understand how Japanese sentences fit together using SOV order and relational particles.</p>
+  </header>
+
+  <!-- Lesson 1: SOV Structure & Desu -->
+  <section class="grammar-section">
+    <h2>1. Sentence Structure & The Copula (です)</h2>
+    <p>Unlike English (Subject-Verb-Object), Japanese is an <strong>SOV (Subject-Object-Verb)</strong> language. The verb or state always comes at the end of the clause.</p>
+
+    <div class="formula-box">
+      [Topic/Subject] + [Particle] + [Noun/Adjective] + です (desu)
+    </div>
+
+    <div class="example-group">
+      <div class="example-item">
+        <div class="jp-sentence" lang="ja">わたしは学生です。</div>
+        <div class="romaji">Watashi wa gakusei desu.</div>
+        <div class="en-translation">I am a student.</div>
+      </div>
+      <div class="example-item">
+        <div class="jp-sentence" lang="ja">今日は暑いです。</div>
+        <div class="romaji">Kyou wa atsui desu.</div>
+        <div class="en-translation">Today is hot.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lesson 2: Essential Particles -->
+  <section class="grammar-section">
+    <h2>2. Fundamental Particles (助詞)</h2>
+    <p>Particles follow words to indicate their grammatical role in the sentence.</p>
+
+    <div class="example-group">
+      <div class="example-item">
+        <p><span class="particle-pill">は (wa)</span> <strong>Topic Marker:</strong> Identifies what the sentence is about.</p>
+        <div class="jp-sentence" lang="ja"><ruby>田中<rt>たなか</rt></ruby>さんは先生です。</div>
+        <div class="romaji">Tanaka-san wa sensei desu.</div>
+        <div class="en-translation">As for Tanaka, he is a teacher.</div>
+      </div>
+
+      <div class="example-item">
+        <p><span class="particle-pill">を (o / wo)</span> <strong>Direct Object Marker:</strong> Marks the entity receiving the verb's action.</p>
+        <div class="jp-sentence" lang="ja">水を飲みます。</div>
+        <div class="romaji">Mizu o nomimasu.</div>
+        <div class="en-translation">I drink water.</div>
+      </div>
+
+      <div class="example-item">
+        <p><span class="particle-pill">に (ni)</span> <strong>Target / Time / Direction Marker:</strong> Pinpoints a specific destination or point in time.</p>
+        <div class="jp-sentence" lang="ja">七時に起きます。</div>
+        <div class="romaji">Shichi-ji ni okimasu.</div>
+        <div class="en-translation">I wake up at 7 o'clock.</div>
+      </div>
+
+      <div class="example-item">
+        <p><span class="particle-pill">で (de)</span> <strong>Location of Action / Means:</strong> Marks where an active event takes place, or the tool used.</p>
+        <div class="jp-sentence" lang="ja">図書館で勉強します。</div>
+        <div class="romaji">Toshokan de benkyou shimasu.</div>
+        <div class="en-translation">I study at the library.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lesson 3: Present Polite Verbs -->
+  <section class="grammar-section">
+    <h2>3. Polite Verb Endings (〜ます)</h2>
+    <p>In polite conversation (Keigo / Teineigo), non-past affirmative verbs end in <code>〜ます</code> (masu), and negatives end in <code>〜ません</code> (masen).</p>
+
+    <div class="formula-box">
+      Verb Stem + ます (Affirmative) / ません (Negative)
+    </div>
+
+    <div class="example-group">
+      <div class="example-item">
+        <div class="jp-sentence" lang="ja">本を読みます。</div>
+        <div class="romaji">Hon o yomimasu.</div>
+        <div class="en-translation">I read a book. / I will read a book.</div>
+      </div>
+      <div class="example-item">
+        <div class="jp-sentence" lang="ja">肉を食べません。</div>
+        <div class="romaji">Niku o tabemasen.</div>
+        <div class="en-translation">I do not eat meat.</div>
+      </div>
+    </div>
+    <details>
+      <summary>Grammar tip</summary>
+      <p>Japanese is usually written without spaces. Particles such as は, を, に, and で still show how each word relates to the verb.</p>
+    </details>
+  </section>
+{% endblock %}

@@ -1,0 +1,326 @@
+{% extends 'learning/base.html' %} 
+{% block title %}Hiragana Lessons | Kotoba{% endblock %} 
+{% block content %} 
+<style> 
+  .hiragana-page { max-width: 1000px; margin: 0 auto; color: #263238; font-family: system-ui, sans-serif; } 
+  .hiragana-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr); gap: 1.5rem; align-items: start; } 
+  .hiragana-card { background: #fff; border: 1px solid #e4e8ec; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 3px 12px rgba(20, 40, 60, .05); } 
+  .lesson-pair { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; margin: 1rem 0; } 
+  .kana-card { text-align: center; border-radius: 12px; padding: 1rem; background: #f2f7fb; } 
+  .kana { display: block; font-family: "Noto Sans JP", "Noto Sans CJK JP", "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; font-size: 3rem; line-height: 1.2; } 
+  .romaji { color: #52616b; font-weight: 500; font-size: 1.1rem; } 
+  .progress-track { height: 10px; border-radius: 99px; background: #e7edf1; overflow: hidden; margin: .75rem 0; } 
+  .progress-fill { height: 100%; width: 0; background: #258b77; transition: width .25s ease-out; } 
+  .quiz-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem; margin: 1rem 0; } 
+  .hiragana-page button { cursor: pointer; border: 0; border-radius: 8px; padding: .7rem .9rem; background: #267b70; color: #fff; font: inherit; transition: background .15s; } 
+  .hiragana-page button:hover { background: #1d635a; } 
+  .hiragana-page button:disabled { cursor: not-allowed; opacity: .55; } 
+  .quiz-options button { background: #edf3f5; color: #263238; border: 1px solid #dce5e9; } 
+  .quiz-options button:hover { background: #dcefeb; } 
+  .quiz-options button.correct { background: #d9f3e4; border-color: #46a66a; color: #1e633a; font-weight: 600; } 
+  .quiz-options button.incorrect { background: #ffe4e1; border-color: #dc7668; color: #9c2e21; } 
+  .quiz-options input { min-width: 0; padding: .7rem .9rem; border: 1px solid #dce5e9; border-radius: 8px; font: inherit; }
+  .status { min-height: 1.5em; font-weight: 600; margin: 8px 0; } 
+  .muted { color: #60717b; } 
+  @media (max-width: 700px) { .hiragana-layout { grid-template-columns: 1fr; } } 
+</style> 
+
+<main class="hiragana-page" data-hiragana-app> 
+  <h2>Hiragana Lessons</h2> 
+  <p>Learn the kana two at a time, then practise at your own pace. Finish every pair to unlock the graded assessment; passing it unlocks Katakana.</p> 
+  
+  <div class="hiragana-layout"> 
+    <section aria-labelledby="lesson-heading"> 
+      <div class="hiragana-card"> 
+        <h3 id="lesson-heading">Your next letter pair</h3> 
+        <p id="lesson-intro" class="muted"></p> 
+        <div id="lesson-pair" class="lesson-pair" aria-live="polite"></div> 
+        <div class="progress-track" role="progressbar" aria-label="Hiragana pairs completed" aria-valuemin="0" aria-valuemax="23" aria-valuenow="0">
+          <div class="progress-fill"></div>
+        </div> 
+        <p id="lesson-progress" class="muted"></p> 
+        <button id="complete-pair" type="button">I’ve learned this pair — next pair</button>
+        <button id="reset-progress" type="button" style="background: transparent; color: #60717b; border: 1px solid #dce5e9; margin-left: 0.5rem;">Reset Progress</button> 
+      </div> 
+      
+      <div class="hiragana-card" id="final-quiz-card"> 
+        <h3>Final graded quiz</h3> 
+        <p id="final-lock-copy" class="muted">Complete all 23 pairs to unlock the graded quiz. You’ll need 8 correct answers out of 10 to pass.</p> 
+        <div id="final-quiz" hidden> 
+          <p id="final-question" style="font-weight: 600;"></p> 
+          <div id="final-options" class="quiz-options"></div> 
+          <p id="final-feedback" class="status" aria-live="polite"></p> 
+          <button id="final-next" type="button" hidden>Next question</button> 
+        </div> 
+        <p id="katakana-unlocked" hidden role="status" style="color: #258b77; font-weight: 700;">You passed! Katakana is now unlocked. Great work!</p> 
+      </div> 
+    </section> 
+    
+    <aside class="hiragana-card" aria-labelledby="practice-heading"> 
+      <h3 id="practice-heading">Practice corner</h3> 
+      <p class="muted">A just-for-fun quiz on the letters you’ve learned. No score is saved and nothing is graded.</p> 
+      <p id="practice-question" aria-live="polite" style="font-weight: 600;"></p> 
+      <div id="practice-options" class="quiz-options"></div> 
+      <p id="practice-feedback" class="status" aria-live="polite"></p> 
+      <button id="practice-next" type="button">Another question</button> 
+    </aside> 
+  </div> 
+</main> 
+
+<script> 
+
+(() => { 
+  const app = document.querySelector('[data-hiragana-app]'); 
+  if (!app) return; 
+
+  const rows = [ 
+    [['あ','a'],['い','i']], [['う','u'],['え','e']], [['お','o'],['か','ka']], 
+    [['き','ki'],['く','ku']], [['け','ke'],['こ','ko']], [['さ','sa'],['し','shi']], 
+    [['す','su'],['せ','se']], [['そ','so'],['た','ta']], [['ち','chi'],['つ','tsu']], 
+    [['て','te'],['と','to']], [['な','na'],['に','ni']], [['ぬ','nu'],['ね','ne']], 
+    [['の','no'],['は','ha']], [['ひ','hi'],['ふ','fu']], [['へ','he'],['ほ','ho']], 
+    [['ま','ma'],['み','mi']], [['む','mu'],['め','me']], [['も','mo'],['や','ya']], 
+    [['ゆ','ゆ','yu'],['よ','yo']], [['ら','ra'],['り','ri']], [['る','ru'],['れ','re']], 
+    [['ろ','ro'],['わ','wa']], [['を','wo'],['ん','n']] 
+  ].map(pair => pair.map(item => item.length === 3 ? [item[0], item[2]] : item)); 
+
+  const allKana = rows.flat(); 
+
+  // Helpers
+  const readInt = (key, fallback) => { 
+    try { 
+      const val = parseInt(localStorage.getItem(key), 10);
+      return Number.isNaN(val) ? fallback : val; 
+    } catch (_) { 
+      return fallback; 
+    } 
+  }; 
+
+  const isStoredTrue = key => { 
+    try { return localStorage.getItem(key) === 'true'; } catch (_) { return false; } 
+  }; 
+
+  const save = (key, value) => { 
+    try { localStorage.setItem(key, String(value)); } catch (_) {} 
+  }; 
+
+  function recordStreakActivity() {
+    fetch('/update-streak/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({})
+    }).catch(() => {});
+  }
+
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  let completed = Math.min(rows.length, Math.max(0, readInt('kotoba-hiragana-pairs', 0))); 
+  let finalQuestions = [];
+  let finalQuestionIndex = 0; 
+  let finalScore = 0; 
+
+  // DOM Bindings
+  const pairNode = app.querySelector('#lesson-pair'); 
+  const fill = app.querySelector('.progress-fill'); 
+  const progressTrack = app.querySelector('.progress-track');
+  const progressText = app.querySelector('#lesson-progress'); 
+  const completeButton = app.querySelector('#complete-pair'); 
+  const finalCard = app.querySelector('#final-quiz'); 
+  const finalLock = app.querySelector('#final-lock-copy'); 
+  const katakanaBadge = app.querySelector('#katakana-unlocked');
+
+  const practiceQuestion = app.querySelector('#practice-question'); 
+  const practiceOptions = app.querySelector('#practice-options'); 
+  const practiceFeedback = app.querySelector('#practice-feedback'); 
+  const practiceNext = app.querySelector('#practice-next'); 
+
+  const finalQuestionNode = app.querySelector('#final-question'); 
+  const finalOptionsNode = app.querySelector('#final-options'); 
+  const finalFeedbackNode = app.querySelector('#final-feedback'); 
+  const finalNextButton = app.querySelector('#final-next'); 
+
+  function renderLesson() { 
+    const done = completed >= rows.length; 
+    const index = Math.min(completed, rows.length - 1); 
+    
+    app.querySelector('#lesson-intro').textContent = done  
+      ? 'All hiragana pairs are unlocked. Review them any time before your assessment.'  
+      : `Pair ${completed + 1} of ${rows.length} · Say each sound aloud, then notice the shape of the kana.`; 
+    
+    pairNode.innerHTML = (done ? allKana.slice(-2) : rows[index]) 
+      .map(([kana, sound]) => `
+        <div class="kana-card">
+          <span class="kana" lang="ja">${kana}</span>
+          <span class="romaji">${sound}</span>
+        </div>
+      `).join(''); 
+    
+    const percentage = ((completed / rows.length) * 100).toFixed(1);
+    fill.style.width = `${percentage}%`; 
+    progressTrack.setAttribute('aria-valuenow', completed); 
+    progressText.textContent = `${completed} of ${rows.length} pairs completed`; 
+    
+    completeButton.hidden = done; 
+    finalLock.hidden = done; 
+
+    const isUnlocked = isStoredTrue('kotoba-katakana-unlocked'); 
+    finalCard.hidden = !done || isUnlocked; 
+    katakanaBadge.hidden = !isUnlocked; 
+
+    if (done && !isUnlocked && finalQuestionIndex === 0 && finalQuestions.length === 0) { 
+      startFinalQuiz(); 
+    } 
+    updatePractice(); 
+  } 
+
+  completeButton.addEventListener('click', () => { 
+    if (completed < rows.length) { 
+      completed++; 
+      save('kotoba-hiragana-pairs', completed); 
+      recordStreakActivity();
+      renderLesson(); 
+    } 
+  }); 
+
+  function askQuestion(questionNode, optionsNode, feedbackNode, pool, answerCallback, questionPrefix = '', specificTarget = null) { 
+    if (!pool || pool.length === 0) { 
+      questionNode.textContent = 'Complete a lesson pair to add letters to your practice pool.'; 
+      optionsNode.innerHTML = ''; 
+      feedbackNode.textContent = ''; 
+      return; 
+    } 
+
+    const target = specificTarget || pool[Math.floor(Math.random() * pool.length)]; 
+    questionNode.textContent = `${questionPrefix}What sound does「${target[0]}」make?`; 
+    feedbackNode.textContent = ''; 
+    optionsNode.innerHTML = ''; 
+    const form = document.createElement('form');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.autocomplete = 'off';
+    input.autocapitalize = 'none';
+    input.spellcheck = false;
+    input.setAttribute('aria-label', 'Type the romaji pronunciation');
+    input.placeholder = 'Type the romaji sound';
+    const submit = document.createElement('button');
+    submit.type = 'submit';
+    submit.textContent = 'Check answer';
+    form.append(input, submit);
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (submit.disabled) return;
+      const isCorrect = input.value.trim().toLowerCase() === target[1].toLowerCase();
+      input.disabled = true;
+      submit.disabled = true;
+      feedbackNode.textContent = isCorrect ? 'Correct! ✨' : `Incorrect.「${target[0]}」sounds like "${target[1]}".`;
+      feedbackNode.style.color = isCorrect ? '#258b77' : '#dc7668';
+      recordStreakActivity();
+      if (answerCallback) answerCallback(isCorrect);
+    });
+    optionsNode.appendChild(form);
+    input.focus();
+  } 
+
+  function updatePractice() { 
+    // If user has not completed pair 1, allow practicing the current active pair
+    const pool = completed === 0 ? rows[0] : allKana.slice(0, completed * 2); 
+    practiceNext.disabled = true; 
+    askQuestion(practiceQuestion, practiceOptions, practiceFeedback, pool, () => { 
+      practiceNext.disabled = false; 
+    }); 
+  } 
+  practiceNext.addEventListener('click', updatePractice); 
+
+  function startFinalQuiz() { 
+    finalQuestionIndex = 0; 
+    finalScore = 0; 
+    finalQuestions = shuffle(allKana).slice(0, 10); 
+    finalNextButton.textContent = 'Next question'; 
+    finalNextButton.onclick = handleFinalNext; 
+    serveFinalQuestion(); 
+  } 
+
+  function serveFinalQuestion() { 
+    finalNextButton.hidden = true; 
+    const currentTarget = finalQuestions[finalQuestionIndex]; 
+    askQuestion(
+      finalQuestionNode, 
+      finalOptionsNode, 
+      finalFeedbackNode, 
+      allKana, 
+      correct => { 
+        if (correct) finalScore++; 
+        finalNextButton.hidden = false; 
+      }, 
+      `Question ${finalQuestionIndex + 1} of 10: `,
+      currentTarget
+    ); 
+  } 
+
+  function handleFinalNext() { 
+    finalQuestionIndex++; 
+    if (finalQuestionIndex < 10) { 
+      serveFinalQuestion(); 
+    } else { 
+      finishFinalQuiz(); 
+    } 
+  } 
+  const resetButton = app.querySelector('#reset-progress');
+if (resetButton) {
+  resetButton.addEventListener('click', () => {
+    if (confirm('Are you sure you want to reset your Hiragana progress?')) {
+      localStorage.removeItem('kotoba-hiragana-pairs');
+      localStorage.removeItem('kotoba-katakana-unlocked');
+      completed = 0;
+      finalQuestionIndex = 0;
+      finalScore = 0;
+      renderLesson();
+    }
+  });
+}
+
+  function finishFinalQuiz() { 
+    finalOptionsNode.innerHTML = ''; 
+    finalNextButton.hidden = true; 
+    
+    if (finalScore >= 8) { 
+      finalQuestionNode.textContent = 'Assessment Passed!'; 
+      finalFeedbackNode.textContent = `Score: ${finalScore}/10. You have unlocked Katakana.`; 
+      finalFeedbackNode.style.color = '#258b77';
+      save('kotoba-katakana-unlocked', 'true'); 
+      finalCard.hidden = true; 
+      katakanaBadge.hidden = false; 
+      
+      const csrfToken = '{{ csrf_token }}';
+      fetch('/update-stage/', { 
+        method: 'POST', 
+        headers: { 
+          'X-CSRFToken': csrfToken.includes('csrf_token') ? '' : csrfToken, 
+          'Content-Type': 'application/json' 
+        }, 
+        body: JSON.stringify({ new_stage: 'KATAKANA' }) 
+      }).catch(() => {}); 
+    } else { 
+      finalQuestionNode.textContent = 'Assessment Not Passed'; 
+      finalFeedbackNode.textContent = `Score: ${finalScore}/10. You need at least 8/10 to pass.`; 
+      finalFeedbackNode.style.color = '#dc7668';
+      finalNextButton.textContent = 'Restart Assessment'; 
+      finalNextButton.hidden = false; 
+      finalNextButton.onclick = startFinalQuiz; 
+    } 
+  } 
+
+  renderLesson(); 
+})(); 
+</script> 
+{% endblock %}
